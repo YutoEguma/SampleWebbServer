@@ -1,5 +1,7 @@
 package io.github.yutoeguma;
 
+import io.github.yutoeguma.exeption.BadRequestException;
+import io.github.yutoeguma.exeption.ContentsNotFoundException;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -24,27 +26,33 @@ public class SampleWebServer {
             try (
                     ServerSocket serverSocket = new ServerSocket(portNum);
                     Socket socket = serverSocket.accept();
-                    BufferedWriter respWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+                    OutputStream outputStream = socket.getOutputStream()
             ) {
                 logger.info("=============> request");
                 HttpRequest request = new HttpRequest(socket.getInputStream());
-                logger.info(request.getBody());
-                logger.info(request.getHeader());
+                logger.info(request.toString());
 
                 logger.info("=============> response");
-                HttpResponse response = new HttpResponse();
+
                 try {
-                    response.setHeader("HTTP/1.1 200 OK");
-                    response.setBody(contentsLoader.getContents(request.getRequestTarget()));
-                    logger.info(response.toString());
-                    respWriter.write(response.toString());
-                } catch (NoSuchFileException e) {
-                    response.setHeader("HTTP/1.1 404 Not Found");
-                    logger.info(response.toString());
-                    respWriter.write(response.toString());
+                    HttpResponse response = new HttpResponse(HttpStatus.OK,
+                            contentsLoader.getContents(request.getRequestTarget()));
+                    outputStream.write(response.getRespBinary());
+
+                } catch (BadRequestException e) { // 400
+                    HttpResponse response = new HttpResponse(HttpStatus.BAD_REQUEST);
+                    outputStream.write(response.getRespBinary());
+                } catch (ContentsNotFoundException | NoSuchFileException e) { // 404
+                    HttpResponse response = new HttpResponse(HttpStatus.NOT_FOUND);
+                    outputStream.write(response.getRespBinary());
+
+                } catch (Exception e) { // 500
+                    HttpResponse response = new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR);
+                    outputStream.write(response.getRespBinary());
                 }
 
             } catch (IOException e) {
+                // 今来なら以下は来ないはず、来てもレスポンスを返せない
                 logger.error("IOException Internal Server Error", e);
             } catch (Exception e) {
                 logger.error("Internal Server Error", e);

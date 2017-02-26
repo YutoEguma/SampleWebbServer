@@ -1,5 +1,6 @@
 package io.github.yutoeguma;
 
+import io.github.yutoeguma.exeption.BadRequestException;
 import lombok.Data;
 
 import java.io.BufferedReader;
@@ -9,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author yuto.eguma
@@ -76,7 +78,8 @@ public class HttpRequest {
     private void setRequestLineElement() {
         List<String> requestLineList = Arrays.asList(this.requestLine.split(SP));
         if (requestLineList.size() != 3) {
-            // TODO yuto 何Exceptionを返す？ (2017/02/18)
+            throw new BadRequestException("リクエストの形式が不正です request line : "
+                    + requestLineList.stream().collect(Collectors.joining()));
         }
         this.method = requestLineList.get(0);
         this.requestTarget = requestLineList.get(1);
@@ -85,5 +88,13 @@ public class HttpRequest {
 
     private void setBody(BufferedReader reader) {
         // TODO yuto ここで コンテンツの大きさを取得、body に値をセットする (2017/02/18)
+    }
+
+    @Override
+    public String toString() {
+        return (new StringBuilder()).append(this.header)
+            .append(CRLF)
+            .append(CRLF)
+            .append(this.body).toString();
     }
 }
