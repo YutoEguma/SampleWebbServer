@@ -2,6 +2,8 @@ package io.github.yutoeguma;
 
 import lombok.Data;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +49,7 @@ public class HttpResponse {
      *
      * @return 返す値
      */
-    public byte[] getRespBinary() {
+    private byte[] getRespBinary() {
         List<Byte> byteList = new ArrayList<>();
 
         // ヘッダーのバイトコード化
@@ -67,5 +69,9 @@ public class HttpResponse {
             byteArray[byteList.size() + i] = this.body[i];
         }
         return byteArray;
+    }
+
+    public void writeResponce(OutputStream os) throws IOException {
+        os.write(this.getRespBinary());
     }
 }
