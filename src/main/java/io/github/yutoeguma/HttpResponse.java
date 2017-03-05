@@ -71,7 +71,7 @@ public class HttpResponse {
         return byteArray;
     }
 
-    public void writeResponce(OutputStream os) throws IOException {
+    public void writeResponse(OutputStream os) throws IOException {
         os.write(this.getRespBinary());
     }
 }

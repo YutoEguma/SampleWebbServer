@@ -1,5 +1,6 @@
 package io.github.yutoeguma;
 
+import io.github.yutoeguma.exeption.BadRequestException;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -9,7 +10,7 @@ import java.net.Socket;
 /**
  * 通信を受け付けたら
  * HTTPプロトコルとしてリクエストを解析し
- * レスポンスを返すタスク
+ * レスポンスをクライアントに返すタスク
  *
  * @author yuto.eguma
  */
@@ -42,14 +43,33 @@ public class CreateResponseTask implements Runnable {
      */
     @Override
     public void run() {
+
         try (OutputStream os = socket.getOutputStream()) {
-            HttpRequest request = new HttpRequest(socket.getInputStream());
-            HttpResponse response = handler.apply(request);
-            response.writeResponce(os);
+            HttpResponse response;
+
+            // リクエスト解析中に発生する Exception はここでハンドリングする
+            try {
+                HttpRequest request = new HttpRequest(socket.getInputStream());
+                response = handler.handle(request);
+            } catch (BadRequestException e) {
+                logger.info("Bad Request", e);
+                response = new HttpResponse(HttpStatus.BAD_REQUEST);
+            } catch (IOException e) {
+                logger.error("IOException occurred in create response, Internal Server Error", e);
+                response = new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR);
+            } catch (Exception e) {
+                logger.error("Internal Server Error", e);
+                response = new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            response.writeResponse(os);
         } catch (IOException e) {
-            logger.error("IOException Internal Server Error", e);
-        } catch (Exception e) {
-            logger.error("Internal Server Error", e);
+            logger.error("IOException occurred in writing response");
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                logger.error("socket not closed");
+            }
         }
     }
 }

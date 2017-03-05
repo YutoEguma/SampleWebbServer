@@ -1,14 +1,12 @@
 package io.github.yutoeguma;
 
-import io.github.yutoeguma.exeption.BadRequestException;
 import io.github.yutoeguma.exeption.ContentsNotFoundException;
-import java.nio.file.NoSuchFileException;
-import java.util.function.Function;
+import java.io.IOException;
 
 /**
  * Httpリクエストを受け取り、レスポンスに変換するクラスです
  */
-public class HttpRequestHandler implements Function<HttpRequest, HttpResponse> {
+public class HttpRequestHandler {
 
     private static ContentsLoader contentsLoader = ContentsLoader.getContentsLoader();
 
@@ -18,15 +16,19 @@ public class HttpRequestHandler implements Function<HttpRequest, HttpResponse> {
         return httpRequestHandler;
     }
 
-    @Override
-    public HttpResponse apply(HttpRequest request) {
+    /**
+     * コンテンツを取得してレスポンスを返す
+     *
+     * @param request HTTPリクエスト
+     * @return コンテンツ取得によるレスポンス
+     */
+    public HttpResponse handle(HttpRequest request) {
+        // レスポンス作成中に発生する Exception はここでハンドリングする
         try {
             return new HttpResponse(HttpStatus.OK, contentsLoader.getContents(request.getRequestTarget()));
-        } catch (BadRequestException e) { // 400
-            return new HttpResponse(HttpStatus.BAD_REQUEST);
-        } catch (ContentsNotFoundException | NoSuchFileException e) { // 404
+        } catch (ContentsNotFoundException e) {
             return new HttpResponse(HttpStatus.NOT_FOUND);
-        } catch (Exception e) { // 500
+        } catch (IOException e) {
             return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
