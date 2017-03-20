@@ -1,11 +1,16 @@
 package io.github.yutoeguma;
 
+import io.github.yutoeguma.enums.ContentType;
+import io.github.yutoeguma.enums.HttpStatus;
 import lombok.Data;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author yuto.eguma
@@ -21,24 +26,34 @@ public class HttpResponse {
     private static final String CRLF = CR + LF;
     private static final String SP = " ";
 
+    private static final String CONTENT_TYPE = "Content-Type: ";
+    private static final String CONTENT_LENGTH = "Content-Length: ";
+
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
-    private String header; /** ヘッダーはほぼ文字列 */
-    private byte[] body; /** 返すコンテンツは文字列とは限らない */
-    private HttpStatus status;
+    /** レスポンスライン */
+    private String responseLine;
+    /** レスポンスヘッダの要素のMap */
+    private Map<String, String> responseHeaderAttr = new HashMap<>();
+    /** レスポンスボディ */
+    private byte[] body;
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
     public HttpResponse(HttpStatus status) {
-        this.header = "HTTP/1.1 " + status.getStatusCode() + " " + status.toString();
+        this.responseLine = "HTTP/1.1" + SP + status.getStatusCode() + SP + status.toString();
+        this.responseHeaderAttr.put(CONTENT_TYPE, ContentType.textPlain.getContentType());
+        this.responseHeaderAttr.put(CONTENT_LENGTH, "0");
         this.body = new byte[0];
     }
 
-    public HttpResponse(HttpStatus status, byte[] body) {
-        this.header = "HTTP/1.1 " + status.getStatusCode() + " " + status.toString();
-        this.body = body;
+    public HttpResponse(HttpStatus status, Contents contents) {
+        this.responseLine = "HTTP/1.1" + SP + status.getStatusCode() + SP + status.toString();
+        this.responseHeaderAttr.put(CONTENT_TYPE, ContentType.extensionOf(contents.getExtension()).getContentType());
+        this.responseHeaderAttr.put(CONTENT_LENGTH, String.valueOf(contents.getDetail().length));
+        this.body = contents.getDetail();
     }
 
     // ===================================================================================
@@ -46,8 +61,6 @@ public class HttpResponse {
     //                                                                              ======
     /**
      * バイナリでレスポンスを返す
-     *
-     * @return 返す値
      */
     private byte[] getRespBinary() {
         List<Byte> byteList = new ArrayList<>();
@@ -56,7 +69,7 @@ public class HttpResponse {
         for (byte b : this.getHeader().getBytes()) {
             byteList.add(b);
         }
-        for (byte b : (CRLF + CRLF).getBytes()) {
+        for (byte b : (CRLF).getBytes()) {
             byteList.add(b);
         }
 
@@ -71,6 +84,21 @@ public class HttpResponse {
         return byteArray;
     }
 
+    /**
+     * ヘッダーを取得する
+     */
+    public String getHeader() {
+        return this.responseLine + CRLF
+                + responseHeaderAttr.entrySet().stream()
+                .map(entry -> entry.getKey() + entry.getValue() + CRLF).collect(Collectors.joining());
+    }
+
+    // ===================================================================================
+    //                                                                     response writer
+    //                                                                     ===============
+    /**
+     * レスポンスを返す
+     */
     public void writeResponse(OutputStream os) throws IOException {
         os.write(this.getRespBinary());
     }

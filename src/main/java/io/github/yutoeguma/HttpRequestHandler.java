@@ -1,6 +1,7 @@
 package io.github.yutoeguma;
 
-import io.github.yutoeguma.exeption.ContentsNotFoundException;
+import io.github.yutoeguma.enums.HttpStatus;
+import io.github.yutoeguma.exeptions.ContentsNotFoundException;
 import java.io.IOException;
 
 /**
@@ -8,14 +9,22 @@ import java.io.IOException;
  */
 public class HttpRequestHandler {
 
-    private static ContentsLoader contentsLoader = ContentsLoader.getContentsLoader();
-
+    // ===================================================================================
+    //                                                                          Definition
+    //                                                                          ==========
+    private static ContentsLoader contentsLoader = ContentsLoader.get();
     private static HttpRequestHandler httpRequestHandler = new HttpRequestHandler();
 
+    // ===================================================================================
+    //                                                                            Accessor
+    //                                                                            ========
     public static HttpRequestHandler get() {
         return httpRequestHandler;
     }
 
+    // ===================================================================================
+    //                                                                             Handler
+    //                                                                             =======
     /**
      * コンテンツを取得してレスポンスを返す
      *
@@ -25,7 +34,8 @@ public class HttpRequestHandler {
     public HttpResponse handle(HttpRequest request) {
         // レスポンス作成中に発生する Exception はここでハンドリングする
         try {
-            return new HttpResponse(HttpStatus.OK, contentsLoader.getContents(request.getRequestTarget()));
+            Contents contents = contentsLoader.getContents(request.getRequestTarget());
+            return new HttpResponse(HttpStatus.OK, contents);
         } catch (ContentsNotFoundException e) {
             return new HttpResponse(HttpStatus.NOT_FOUND);
         } catch (IOException e) {

@@ -1,4 +1,4 @@
-package io.github.yutoeguma;
+package io.github.yutoeguma.enums;
 
 import lombok.Getter;
 
@@ -9,6 +9,7 @@ import lombok.Getter;
  */
 public enum HttpStatus {
 
+    /** 実装するHTTP ステータスコードを増やす場合はここに記述していく */
     OK(200),
     BAD_REQUEST(400),
     NOT_FOUND(404),

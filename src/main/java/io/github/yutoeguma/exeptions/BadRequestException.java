@@ -1,4 +1,4 @@
-package io.github.yutoeguma.exeption;
+package io.github.yutoeguma.exeptions;
 
 import lombok.NoArgsConstructor;
 

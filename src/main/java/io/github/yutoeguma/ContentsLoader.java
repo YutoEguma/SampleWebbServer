@@ -1,6 +1,6 @@
 package io.github.yutoeguma;
 
-import io.github.yutoeguma.exeption.ContentsNotFoundException;
+import io.github.yutoeguma.exeptions.ContentsNotFoundException;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,32 +8,57 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
- * webapp 以下のコンテンツを取得するクラス
+ * コンテンツを取得するクラス
  *
  * @author yuto.eguma
  */
 public class ContentsLoader {
 
-    private static String WEBAPP_PATH = new File("./").getAbsoluteFile().getParent() + "/src/main/resources/webapp";
-
+    // ===================================================================================
+    //                                                                          Definition
+    //                                                                          ==========
+    /** コンテンツの配置されているディレクトリ */
+    private static String CONTENTS_PATH = new File("./").getAbsoluteFile().getParent() + "/src/main/resources/public";
+    /** contentsLoader の唯一のインスタンス */
     private static ContentsLoader contentsLoader = new ContentsLoader();
 
+    // ===================================================================================
+    //                                                                         Constructor
+    //                                                                         ===========
     private ContentsLoader() {}
 
-    public static ContentsLoader getContentsLoader() {
+    // ===================================================================================
+    //                                                                            Accessor
+    //                                                                            ========
+
+    /**
+     * contentsLoader を取得します
+     * @return contentsLoader (Singleton)
+     */
+    public static ContentsLoader get() {
         return contentsLoader;
     }
 
-    public byte[] getContents(String contentsPath) throws IOException {
+    /**
+     * コンテンツを返します
+     *
+     * @param contentsPath コンテンツへのPath
+     * @return コンテンツ
+     */
+    public Contents getContents(String contentsPath) throws IOException {
 
-        File file = new File(WEBAPP_PATH + contentsPath);
+        File file = new File(CONTENTS_PATH + contentsPath);
         if (file.isFile()) {
             // ファイルが指定されていればそれを返す
-            return Files.readAllBytes(Paths.get(file.getAbsolutePath()));
+            String filePath = file.getAbsolutePath();
+            byte[] detail = Files.readAllBytes(Paths.get(filePath));
+            return new Contents(filePath, detail);
 
         } else if (file.isDirectory()) {
             // ディレクトリであれば indexファイルを探して返す
-            return Files.readAllBytes(Paths.get(file.getAbsolutePath() + "/index.html"));
+            String filePath = file.getAbsolutePath() + "/index.html";
+            byte[] detail = Files.readAllBytes(Paths.get(filePath));
+            return new Contents(filePath, detail);
 
         } else {
             // 存在しなければExceptionを返す
