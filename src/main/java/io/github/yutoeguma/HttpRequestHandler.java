@@ -2,6 +2,7 @@ package io.github.yutoeguma;
 
 import io.github.yutoeguma.enums.HttpStatus;
 import io.github.yutoeguma.exeptions.ContentsNotFoundException;
+
 import java.io.IOException;
 
 /**
@@ -33,6 +34,8 @@ public class HttpRequestHandler {
      */
     public HttpResponse handle(HttpRequest request) {
         // レスポンス作成中に発生する Exception はここでハンドリングする
+        // TODO yuto.eguma 500以外なら例外を投げない作りにする (2017/03/27)
+        // memo : コンテンツが存在しないものリクエストに対して例外を投げているのはおかしい...
         try {
             Contents contents = contentsLoader.getContents(request.getRequestTarget());
             return new HttpResponse(HttpStatus.OK, contents);
