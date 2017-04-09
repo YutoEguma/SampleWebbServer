@@ -6,6 +6,8 @@ import io.github.yutoeguma.enums.HttpStatus;
 import io.github.yutoeguma.http.message.HttpRequest;
 import io.github.yutoeguma.http.message.HttpResponse;
 
+import java.io.IOException;
+
 /**
  * Httpリクエストを受け取り、レスポンスに変換するクラスです
  */
@@ -38,14 +40,19 @@ public class HttpRequestHandler {
 
         // memo : ファイルの読み込み処理の結果と、その場合のレスポンスのマッピング
         switch (contentsLoadResult.getLoadResultType()) {
-            case loadSuccess: return new HttpResponse(HttpStatus.OK, contentsLoadResult);
-            case forbidden: return new HttpResponse(HttpStatus.FORBIDDEN);
-            case notExists: return new HttpResponse(HttpStatus.NOT_FOUND);
-            case loadFailure: return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR);
+            case loadSuccess:
+                return new HttpResponse(HttpStatus.OK, contentsLoadResult);
+            case forbidden:
+                return new HttpResponse(HttpStatus.FORBIDDEN);
+            case notExists:
+                return new HttpResponse(HttpStatus.NOT_FOUND);
+            case loadFailure:
+                return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR);
 
             // memo : マッピングを上で定義し忘れていたら、ここで落とす
-            default: throw new IllegalStateException("予期しない ContentsLoadResultTypeです。 contentsLoadResultType: "
-                    + contentsLoadResult.getLoadResultType());
+            default:
+                throw new IllegalStateException("予期しない ContentsLoadResultTypeです。 contentsLoadResultType: "
+                        + contentsLoadResult.getLoadResultType());
         }
     }
 }
