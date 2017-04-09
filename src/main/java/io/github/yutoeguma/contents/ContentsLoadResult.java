@@ -1,12 +1,13 @@
-package io.github.yutoeguma;
+package io.github.yutoeguma.contents;
 
-import lombok.Data;
+import io.github.yutoeguma.enums.ContentsLoadResultType;
+import lombok.Getter;
 
 /**
  * @author yuto
  */
-@Data
-public class Contents {
+@Getter
+public class ContentsLoadResult {
 
     // ===================================================================================
     //                                                                           Attribute
@@ -15,13 +16,16 @@ public class Contents {
     private String filePath;
     /** コンテンツの内容 */
     private byte[] detail;
+    /** コンテンツを読み込んだ結果 */
+    private ContentsLoadResultType loadResultType;
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public Contents(String filePath, byte[] detail) {
+    public ContentsLoadResult(String filePath, byte[] detail, ContentsLoadResultType loadResult) {
         this.filePath = filePath;
         this.detail = detail;
+        this.loadResultType = loadResult;
     }
 
     // ===================================================================================

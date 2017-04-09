@@ -1,6 +1,7 @@
-package io.github.yutoeguma;
+package io.github.yutoeguma.http.message;
 
-import io.github.yutoeguma.exeptions.BadRequestException;
+import io.github.yutoeguma.exeptions.IncorrectHttpRequestException;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,8 +19,7 @@ import java.util.stream.Collectors;
 /**
  * @author yuto.eguma
  */
-@Getter
-@Setter
+@Data
 public class HttpRequest {
 
     private static final String CR = "\r";
@@ -82,7 +82,7 @@ public class HttpRequest {
     private void setRequestLineElement() {
         List<String> requestLineList = Arrays.asList(this.requestLine.split(SP));
         if (requestLineList.size() != 3) {
-            throw new BadRequestException("リクエストの形式が不正です request line : "
+            throw new IncorrectHttpRequestException("リクエストの形式が不正です request line : "
                     + requestLineList.stream().collect(Collectors.joining()));
         }
         this.method = requestLineList.get(0);
@@ -95,9 +95,36 @@ public class HttpRequest {
      * @param messageLineList リクエストメッセージの1行ごとのリスト
      */
     private void setRequestHeader(List<String> messageLineList) {
-        this.requestHeaderAttr = messageLineList.stream().skip(1)
-                .map(line -> line.split(":" + SP))
-                .filter(strArray -> strArray.length == 2)
-                .collect(Collectors.toMap(strArray -> strArray[0], strArray -> strArray[1]));
+        List<String[]> headerArrayList = messageLineList.stream().skip(1)
+                .map(line -> line.split(":"))
+                .collect(Collectors.toList());
+
+        throwIncorrectHttpRequestExceptionIfIncorrectHeaderField(messageLineList, headerArrayList);
+
+        this.requestHeaderAttr = headerArrayList.stream()
+                .collect(Collectors.toMap(strArray -> strArray[0], strArray -> strArray[1].trim(),
+                        (name1, name2) -> throwIncorrectHttpRequestExceptionIfDuplicatedHeaderName(messageLineList, name1)));
+    }
+
+    /**
+     * ヘッダーフィールドの形式が正しくなければ、IncorrectHttpRequestExceptionを投げる
+     * @param messageLineList HTTPメッセージ
+     * @param headerArrayList header-field を ":" で区切ったもの
+     */
+    private void throwIncorrectHttpRequestExceptionIfIncorrectHeaderField(List<String> messageLineList, List<String[]> headerArrayList) {
+        if (!headerArrayList.stream().allMatch(strArray -> strArray.length == 2)) {
+            throw new IncorrectHttpRequestException("ヘッダーフィールドの形式が不正です header-field : "
+                    + CRLF + messageLineList.stream().skip(1).collect(Collectors.joining(CRLF)));
+        }
+    }
+
+    /**
+     * ヘッダーフィールドにfield-name が複数存在している旨をIncorrectHttpRequestException として投げる
+     * @param messageLineList HTTPメッセージ
+     * @param name 複数指定された header-name
+     */
+    private String throwIncorrectHttpRequestExceptionIfDuplicatedHeaderName(List<String> messageLineList, String name) {
+        throw new IncorrectHttpRequestException("ヘッダーフィールドに同じフィールドが複数設定されました field-name : " + name + CRLF
+                 + "messageLineList : " + messageLineList.stream().skip(1).collect(Collectors.joining(CRLF)));
     }
 }

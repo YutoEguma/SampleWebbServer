@@ -25,7 +25,7 @@ public class SampleWebServer {
         ServerSocket serverSocket = new ServerSocket(portNum);
         while (true) {
             Socket socket = serverSocket.accept();
-            Thread thread = new Thread(new CreateResponseTask(socket));
+            Thread thread = new Thread(new WriteResponseTask(socket));
             thread.start();
         }
     }

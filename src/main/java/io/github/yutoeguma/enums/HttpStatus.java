@@ -11,6 +11,7 @@ public enum HttpStatus {
 
     /** 実装するHTTP ステータスコードを増やす場合はここに記述していく */
     OK(200),
+    FORBIDDEN(304),
     BAD_REQUEST(400),
     NOT_FOUND(404),
     INTERNAL_SERVER_ERROR(500);

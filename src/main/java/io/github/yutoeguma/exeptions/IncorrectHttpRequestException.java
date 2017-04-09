@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
  * @author yuto.eguma
  */
 @NoArgsConstructor
-public class BadRequestException extends RuntimeException {
+public class IncorrectHttpRequestException extends RuntimeException {
 
-    public BadRequestException(String msg) {
+    public IncorrectHttpRequestException(String msg) {
         super(msg);
     }
 }

@@ -1,9 +1,10 @@
-package io.github.yutoeguma;
+package io.github.yutoeguma.http;
 
+import io.github.yutoeguma.contents.ContentsLoadResult;
+import io.github.yutoeguma.contents.ContentsLoader;
 import io.github.yutoeguma.enums.HttpStatus;
-import io.github.yutoeguma.exeptions.ContentsNotFoundException;
-import java.io.IOException;
-import java.util.Optional;
+import io.github.yutoeguma.http.message.HttpRequest;
+import io.github.yutoeguma.http.message.HttpResponse;
 
 /**
  * Httpリクエストを受け取り、レスポンスに変換するクラスです
@@ -33,15 +34,18 @@ public class HttpRequestHandler {
      * @return コンテンツ取得によるレスポンス
      */
     public HttpResponse handle(HttpRequest request) {
-        try {
-            Optional<Contents> contentsOpt = contentsLoader.loadContents(request.getRequestTarget());
-            // @formatter off
-            return contentsOpt
-                    .map(contents -> new HttpResponse(HttpStatus.OK, contents))
-                    .orElse(new HttpResponse(HttpStatus.NOT_FOUND));
-            // @formatter on
-        } catch (IOException e) {
-            return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR);
+        ContentsLoadResult contentsLoadResult = contentsLoader.loadContents(request.getRequestTarget());
+
+        // memo : ファイルの読み込み処理の結果と、その場合のレスポンスのマッピング
+        switch (contentsLoadResult.getLoadResultType()) {
+            case loadSuccess: return new HttpResponse(HttpStatus.OK, contentsLoadResult);
+            case forbidden: return new HttpResponse(HttpStatus.FORBIDDEN);
+            case notExists: return new HttpResponse(HttpStatus.NOT_FOUND);
+            case loadFailure: return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR);
+
+            // memo : マッピングを上で定義し忘れていたら、ここで落とす
+            default: throw new IllegalStateException("予期しない ContentsLoadResultTypeです。 contentsLoadResultType: "
+                    + contentsLoadResult.getLoadResultType());
         }
     }
 }

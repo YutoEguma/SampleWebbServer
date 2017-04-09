@@ -1,11 +1,10 @@
-package io.github.yutoeguma;
+package io.github.yutoeguma.http.message;
 
+import io.github.yutoeguma.contents.ContentsLoadResult;
 import io.github.yutoeguma.enums.ContentType;
 import io.github.yutoeguma.enums.HttpStatus;
 import lombok.Data;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +31,7 @@ public class HttpResponse {
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
-    /** レスポンスライン */
+    /** response-line */
     private String responseLine;
     /** レスポンスヘッダの要素のMap */
     private Map<String, String> responseHeaderAttr = new HashMap<>();
@@ -49,11 +48,11 @@ public class HttpResponse {
         this.body = new byte[0];
     }
 
-    public HttpResponse(HttpStatus status, Contents contents) {
+    public HttpResponse(HttpStatus status, ContentsLoadResult contentsLoadResult) {
         this.responseLine = "HTTP/1.1" + SP + status.getStatusCode() + SP + status.toString();
-        this.responseHeaderAttr.put(CONTENT_TYPE, ContentType.extensionOf(contents.getExtension()).getContentType());
-        this.responseHeaderAttr.put(CONTENT_LENGTH, String.valueOf(contents.getDetail().length));
-        this.body = contents.getDetail();
+        this.responseHeaderAttr.put(CONTENT_TYPE, ContentType.extensionOf(contentsLoadResult.getExtension()).getContentType());
+        this.responseHeaderAttr.put(CONTENT_LENGTH, String.valueOf(contentsLoadResult.getDetail().length));
+        this.body = contentsLoadResult.getDetail();
     }
 
     // ===================================================================================
@@ -62,7 +61,7 @@ public class HttpResponse {
     /**
      * バイナリでレスポンスを返す
      */
-    private byte[] getRespBinary() {
+    public byte[] getRespBinary() {
         List<Byte> byteList = new ArrayList<>();
 
         // ヘッダーのバイトコード化
@@ -91,15 +90,5 @@ public class HttpResponse {
         return this.responseLine + CRLF
                 + responseHeaderAttr.entrySet().stream()
                 .map(entry -> entry.getKey() + entry.getValue() + CRLF).collect(Collectors.joining());
-    }
-
-    // ===================================================================================
-    //                                                                     response writer
-    //                                                                     ===============
-    /**
-     * レスポンスを返す
-     */
-    public void writeResponse(OutputStream os) throws IOException {
-        os.write(this.getRespBinary());
     }
 }
