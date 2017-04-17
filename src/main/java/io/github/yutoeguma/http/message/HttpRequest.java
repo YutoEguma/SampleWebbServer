@@ -2,8 +2,6 @@ package io.github.yutoeguma.http.message;
 
 import io.github.yutoeguma.exeptions.IncorrectHttpRequestException;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -96,7 +94,7 @@ public class HttpRequest {
      */
     private void setRequestHeader(List<String> messageLineList) {
         List<String[]> headerArrayList = messageLineList.stream().skip(1)
-                .map(line -> line.split(":"))
+                .map(line -> line.split(":", 2)) // cookie に ":" が含まれることがあるので、2分割する
                 .collect(Collectors.toList());
 
         throwIncorrectHttpRequestExceptionIfIncorrectHeaderField(messageLineList, headerArrayList);
@@ -112,7 +110,7 @@ public class HttpRequest {
      * @param headerArrayList header-field を ":" で区切ったもの
      */
     private void throwIncorrectHttpRequestExceptionIfIncorrectHeaderField(List<String> messageLineList, List<String[]> headerArrayList) {
-        if (!headerArrayList.stream().allMatch(strArray -> strArray.length == 2)) {
+        if (!headerArrayList.stream().skip(1).allMatch(strArray -> strArray.length == 2)) {
             throw new IncorrectHttpRequestException("ヘッダーフィールドの形式が不正です header-field : "
                     + CRLF + messageLineList.stream().skip(1).collect(Collectors.joining(CRLF)));
         }
