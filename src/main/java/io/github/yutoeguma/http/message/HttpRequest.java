@@ -1,5 +1,6 @@
 package io.github.yutoeguma.http.message;
 
+import io.github.yutoeguma.enums.HttpMethod;
 import io.github.yutoeguma.exeptions.IncorrectHttpRequestException;
 import lombok.Data;
 
@@ -58,9 +59,18 @@ public class HttpRequest {
     private List<String> readRequestMessageLineList(BufferedReader reader) throws IOException {
         StringBuilder sb = new StringBuilder();
         String headerLine = reader.readLine();
+        int contentLength = 0;
         while (headerLine != null && !headerLine.isEmpty()) {
+            if (headerLine.startsWith("Content-Length")) {
+                contentLength = Integer.parseInt(headerLine.split(":")[1].trim());
+            }
             sb.append(headerLine).append(CRLF);
             headerLine = reader.readLine();
+        }
+        if (0 < contentLength) {
+            char[] c = new char[contentLength];
+            reader.read(c);
+            this.body = new String(c);
         }
         return Arrays.asList(sb.toString().split(CRLF));
     }
@@ -124,5 +134,9 @@ public class HttpRequest {
     private String throwIncorrectHttpRequestExceptionIfDuplicatedHeaderName(List<String> messageLineList, String name) {
         throw new IncorrectHttpRequestException("ヘッダーフィールドに同じフィールドが複数設定されました field-name : " + name + CRLF
                  + "messageLineList : " + messageLineList.stream().skip(1).collect(Collectors.joining(CRLF)));
+    }
+
+    public HttpMethod getHttpMethod() {
+        return HttpMethod.methodOf(this.method);
     }
 }

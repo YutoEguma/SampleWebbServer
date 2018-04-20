@@ -7,6 +7,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
+ * 単純な Web サーバ
+ *
  * @author yuto.eguma
  */
 public class SampleWebServer {

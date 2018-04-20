@@ -91,4 +91,8 @@ public class HttpResponse {
                 + responseHeaderAttr.entrySet().stream()
                 .map(entry -> entry.getKey() + entry.getValue() + CRLF).collect(Collectors.joining());
     }
+
+    public void addResponseHeader(String key, String value) {
+        this.responseHeaderAttr.put(key + ": ", value);
+    }
 }
