@@ -1,31 +1,50 @@
 package io.github.yutoeguma.contents;
 
-import io.github.yutoeguma.enums.ContentsLoadResultType;
-import lombok.Getter;
-
 /**
- * @author yuto
+ * @author cabos
  */
-@Getter
-public class ContentsLoadResult {
+public class Contents {
 
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
-    /** 読み込んでいるコンテンツ */
-    private Contents contents;
-    /** コンテンツを読み込んだ結果 */
-    private ContentsLoadResultType loadResultType;
+    /** コンテンツの場所 */
+    final private String filePath;
+    /** コンテンツの内容 */
+    final private byte[] detail;
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public ContentsLoadResult(String filePath, byte[] detail, ContentsLoadResultType loadResult) {
-        this.contents = new Contents(filePath, detail);
-        this.loadResultType = loadResult;
+    public Contents(String filePath) {
+        this(filePath, new byte[0]);
+    }
+
+
+    public Contents(String filePath, byte[] detail) {
+        this.filePath = filePath;
+        this.detail = detail;
     }
 
     // ===================================================================================
     //                                                                            Accessor
     //                                                                            ========
+    /**
+     * コンテンツの拡張子を取得する
+     * "." で区切り、一番最後の文字列を抜き出す
+     *
+     * @return 拡張子を取得する
+     */
+    public String getExtension() {
+        String[] strArray = this.filePath.split("\\.");
+        return strArray[strArray.length - 1];
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public byte[] getDetail() {
+        return detail;
+    }
 }

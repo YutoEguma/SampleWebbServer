@@ -50,9 +50,9 @@ public class HttpResponse {
 
     public HttpResponse(HttpStatus status, ContentsLoadResult contentsLoadResult) {
         this.responseLine = "HTTP/1.1" + SP + status.getStatusCode() + SP + status.toString();
-        this.responseHeaderAttr.put(CONTENT_TYPE, ContentType.extensionOf(contentsLoadResult.getExtension()).getContentType());
-        this.responseHeaderAttr.put(CONTENT_LENGTH, String.valueOf(contentsLoadResult.getDetail().length));
-        this.body = contentsLoadResult.getDetail();
+        this.responseHeaderAttr.put(CONTENT_TYPE, ContentType.extensionOf(contentsLoadResult.getContents().getExtension()).getContentType());
+        this.responseHeaderAttr.put(CONTENT_LENGTH, String.valueOf(contentsLoadResult.getContents().getDetail().length));
+        this.body = contentsLoadResult.getContents().getDetail();
     }
 
     // ===================================================================================
